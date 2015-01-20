@@ -69,7 +69,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					out += c;
 				} else {
 					if(c!=1) {
-						out += c+'*';
+						out += c+' ';
 					}
 					out += jme.display.texName(variable);
 					if(d!=1) {
@@ -453,6 +453,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	Numbas.jme.display.typeToTeX.polynomial = function(thing,tok,texArgs,settings) {
 		return tok.value.toLaTeX();
+	}
+
+	Numbas.jme.display.texOps.polynomial = function(thing,texArgs,settings) {
+		return texArgs[0];
 	}
 
 	Numbas.jme.display.typeToJME.polynomial = function(thing,tok,bits,settings) {
