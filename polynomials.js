@@ -273,6 +273,14 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			return {quotient: new Polynomial(p1.variable,quotient_coefficients), remainder: p1};
 		},
 
+		mod: function(n) {
+			var coefficients = {};
+			for(var d in this.coefficients) {
+				coefficients[d] = Numbas.math.mod(this.coefficients[d],n);
+			}
+			return new Polynomial(this.variable,coefficients);
+		},
+
 		eq: function(p2) {
 			for(var d in this.coefficients) {
 				if(p2.coefficients[d]!=this.coefficients[d]) {
@@ -435,14 +443,18 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return a.pow(b);
 	}));
 
-	scope.addFunction(new funcObj('/',[TPoly,TPoly],TPoly,function(a,b) {
+	scope.addFunction(new funcObj('quotient',[TPoly,TPoly],TPoly,function(a,b) {
 		var result = a.div(b);
 		return result.quotient;
 	}));
 
-	scope.addFunction(new funcObj('mod',[TPoly,TPoly],TPoly,function(a,b) {
+	scope.addFunction(new funcObj('remainder',[TPoly,TPoly],TPoly,function(a,b) {
 		var result = a.div(b);
 		return result.remainder;
+	}));
+
+	scope.addFunction(new funcObj('mod',[TPoly,TNum],TPoly,function(p,n) {
+		return p.mod(n);
 	}));
 
 	scope.addFunction(new funcObj('degree',[TPoly],TNum,function(p) {

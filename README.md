@@ -45,13 +45,17 @@ Multiply a polynomial by a constant - more convenient than `p*polynomial(n)`.
 
 Take polynomial `p` to the `n`th (integer, non-negative) power.
 
-### `p1/p2`
+### `quotient(p1,p2)`
 
 Divide `p1` by `p2`, and throw away the remainder (polynomial quotient of `p1` and `p2`)
 
-### `mod(p1,p2)`
+### `remainder(p1,p2)`
 
 Remainder when dividing `p1` by `p2`.
+
+### `mod(p,n)`
+
+Take each coefficient of `p` mod `n`.
 
 ### `degree(p)`
 
@@ -130,6 +134,11 @@ Add `n` to the degree of each term of `p`
 ### `p1.div(p2)`
 
 Divide `p1` by `p2`. Returns an object `{quotient: <polynomial>, remainder: <polynomial>}`
+
+
+### `p.mod(n)`
+
+Take each coefficient of `p` mod `n` (returns a new polynomial object)
 
 ### `p1.eq(p2)`
 
