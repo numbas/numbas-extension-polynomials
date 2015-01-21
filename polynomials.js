@@ -448,7 +448,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}));
 
 	Numbas.util.equalityTests['polynomial'] = function(a,b) {
-		return a.eq(b);
+		return a.value.eq(b.value);
 	}
 
 	Numbas.jme.display.typeToTeX.polynomial = function(thing,tok,texArgs,settings) {
