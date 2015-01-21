@@ -289,10 +289,11 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}
 
 	var s_pattern_term = 'm_any(m_nothing,m_type(name);variable,(-m_type(name);variable);negative,m_type(name);variable^m_pm(m_number);degree,(-m_type(name);variable^m_pm(m_number);degree);negative)*m_any(m_nothing,m_pm(m_number));coefficient';
-	var s_pattern_polynomial_terms = 'm_all('+s_pattern_term+');terms+m_nothing';
+	var s_pattern_polynomial_terms = 'm_all(m_pm('+s_pattern_term+'));terms+m_nothing';
 
 	var pattern_polynomial_terms = jme.compile(s_pattern_polynomial_terms);
 	var pattern_term = jme.compile(s_pattern_term);
+	var pattern_negative_term = jme.compile('-?');
 
 	Polynomial.from_tree = function(tree) {
 		var m = matchTree(pattern_polynomial_terms,tree,true);
@@ -307,9 +308,14 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 		var coefficients = {};
 		var poly_variable;
-		terms.map(function(term){
+		terms.map(function(term) {
+			var negate = 1;
+			if(matchTree(pattern_negative_term,term)) {
+				negate = -1;
+				term = term.args[0];
+			}
 			var m = matchTree(pattern_term,term,true);
-			var coefficient = get(m.coefficient,1);
+			var coefficient = negate*get(m.coefficient,1);
 			if(m.negative) {
 				coefficient = -coefficient;
 			}
@@ -465,7 +471,6 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	/*
 	window.poly = poly;
-
 	var p1 = poly('-2x^3+x^2-x+2-1');
 	var p2 = poly('x^2-3');
 	console.log(p1+' + '+p2+' = '+p1.add(p2))
