@@ -75,7 +75,7 @@ JavaScript functions
 
 ### `new Polynomial(variable_name,coefficients)`
 
-`coefficients` is a dictionary of `degree &rarr; coefficient`.
+`coefficients` is a dictionary of `degree → coefficient`.
 
 ### `Polynomial.from_tree(tree)`
 
