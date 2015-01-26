@@ -10,9 +10,11 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 		var bits = [];
 		for(var d in this.coefficients) {
-			var c = this.coefficients[d];
-			if(c!=0) {
-				bits.push({degree:parseFloat(d),coefficient:c});
+			if(!isNaN(d)) {
+				var c = this.coefficients[d];
+				if(c!=0) {
+					bits.push({degree:parseFloat(d),coefficient:c});
+				}
 			}
 		}
 		bits.sort(function(a,b){a=a.degree; b=b.degree; return a>b ? -1 : a<b ? 1 : 0;});
