@@ -64,6 +64,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 				var c = Numbas.math.niceNumber(Math.abs(bit.coefficient));
 				if(i>0) {
 					out += bit.coefficient>0 ? ' + ' : ' - ';
+				} else {
+					if(bit.coefficient<0) {
+						out +='-';
+					}
 				}
 				if(d==0) {
 					out += c;
