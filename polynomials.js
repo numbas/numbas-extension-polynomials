@@ -3,15 +3,17 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
     var funcObj = jme.funcObj;
     var TNum = jme.types.TNum;
 	var matchTree = jme.display.matchTree;
+	var mod = Numbas.math.mod;
 
-	var Polynomial = extension.Polynomial = function(variable,coefficients) {
+	var Polynomial = extension.Polynomial = function(variable,coefficients,modulo) {
 		this.variable = variable;
 		this.coefficients = coefficients;
+		this.modulo = modulo || Infinity;
 
 		var bits = [];
 		for(var d in this.coefficients) {
 			if(!isNaN(d)) {
-				var c = this.coefficients[d];
+				var c = mod(this.coefficients[d], this.modulo);
 				if(!isNaN(c) && c!=0) {
 					bits.push({degree:parseFloat(d),coefficient:c});
 				}
@@ -95,7 +97,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 				d = parseFloat(d);
 				total = add(total,mul(this.coefficients[d],pow(x,d)));
 			}
-			return total;
+			return mod(total, this.modulo);
 		},
 
 		isZero: function() {
@@ -118,7 +120,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			for(var d in this.coefficients) {
 				coefficients[d] = -this.coefficients[d];
 			}
-			return new Polynomial(this.variable,coefficients);
+			return new Polynomial(this.variable,coefficients,this.modulo);
 		},
 
 		add: function(p2) {
@@ -132,7 +134,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			}
 			for(var d in p2.coefficients) {
 				if(d in coefficients) {
-					coefficients[d] += p2.coefficients[d];
+					coefficients[d] = mod(coefficients[d]+p2.coefficients[d], this.modulo);
 					if(coefficients[d] == 0) {
 						delete coefficients[d];
 					}
@@ -140,7 +142,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					coefficients[d] = p2.coefficients[d];
 				}
 			}
-			return new Polynomial(p1.variable,coefficients);
+			return new Polynomial(p1.variable,coefficients,this.modulo);
 		},
 		sub: function(p2) {
 			var p1 = this;
@@ -153,7 +155,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			}
 			for(var d in p2.coefficients) {
 				if(d in coefficients) {
-					coefficients[d] -= p2.coefficients[d];
+					coefficients[d] = mod(coefficients[d]-p2.coefficients[d], this.modulo);
 					if(coefficients[d] == 0) {
 						delete coefficients[d];
 					}
@@ -161,7 +163,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					coefficients[d] = -p2.coefficients[d];
 				}
 			}
-			return new Polynomial(p1.variable,coefficients);
+			return new Polynomial(p1.variable,coefficients,this.modulo);
 		},
 
 		mul: function(p2) {
@@ -177,9 +179,9 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					d2 = parseFloat(d2);
 					var c2 = p2.coefficients[d2];
 					var d = d1+d2;
-					var c = c1*c2;
+					var c = mod(c1*c2, this.modulo);
 					if(d in coefficients) {
-						coefficients[d] += c;
+						coefficients[d] = mod(coefficients[d]+c, this.modulo);
 						if(coefficients[d]==0) {
 							delete coefficients[d];
 						}
@@ -188,10 +190,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					}
 				}
 			}
-			return new Polynomial(p1.variable,coefficients);
+			return new Polynomial(p1.variable,coefficients,this.modulo);
 		},
 
-		pow: function(n,mod) {
+		pow: function(n) {
 			if(!Numbas.util.isInt(n)) {
 				throw(new Error("Sorry, can't take a non-integer power of a polynomial"));
 			}
@@ -202,7 +204,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 				if(this.ordered_coefficients.length==0) {
 					throw(new Error("0^0 is undefined"));
 				} else {
-					return new Polynomial(p1.variable,{0:1});
+					return new Polynomial(p1.variable,{0:1},this.modulo);
 				}
 			}
 
@@ -219,18 +221,9 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 						d2 = parseFloat(d2);
 						var c2 = coefficients[d2];
 						var d = d1+d2;
-						var c;
-						if(mod!==undefined) {
-							c = (c1*c2)%mod;
-						} else {
-							c = c1*c2;
-						}
+						var c = mod(c1*c2, this.modulo);
 						if(d in n_coefficients) {
-							if(mod!==undefined) {
-								n_coefficients[d] = (n_coefficients[d]+c)%mod;
-							} else {
-								n_coefficients[d] += c;
-							}
+							n_coefficients[d] = mod(n_coefficients[d]+c, this.modulo);
 							if(n_coefficients[d]==0) {
 								delete n_coefficients[d];
 							}
@@ -241,15 +234,15 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 				}
 				coefficients = n_coefficients;
 			}
-			return new Polynomial(this.variable,coefficients);
+			return new Polynomial(this.variable,coefficients,this.modulo);
 		},
 
 		scale: function(n) {
 			var coefficients = {};
 			for(var d in this.coefficients) {
-				coefficients[d] = n*this.coefficients[d];
+				coefficients[d] = mod(n*this.coefficients[d], this.modulo);
 			}
-			return new Polynomial(this.variable,coefficients);
+			return new Polynomial(this.variable,coefficients,this.modulo);
 		},
 
 		add_degree: function(n) {
@@ -257,7 +250,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			for(var d in this.coefficients) {
 				coefficients[parseFloat(d)+n] = this.coefficients[d];
 			}
-			return new Polynomial(this.variable,coefficients);
+			return new Polynomial(this.variable,coefficients,this.modulo);
 		},
 
 		div: function(p2) {
@@ -280,12 +273,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 				var sub = {}
 				p2.ordered_coefficients.map(function(t) {
-					sub[t.degree+d] = t.coefficient*c;
+					sub[t.degree+d] = mod(t.coefficient*c, p1.modulo);
 				});
 
-				p1 = p1.sub(new Polynomial(p1.variable,sub));
+				p1 = p1.sub(new Polynomial(p1.variable,sub,this.modulo));
 			}
-			return {quotient: new Polynomial(p1.variable,quotient_coefficients), remainder: p1};
+			return {quotient: new Polynomial(p1.variable,quotient_coefficients,this.modulo), remainder: p1};
 		},
 
 		mod: function(n) {
@@ -293,7 +286,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			for(var d in this.coefficients) {
 				coefficients[d] = Numbas.math.mod(this.coefficients[d],n);
 			}
-			return new Polynomial(this.variable,coefficients);
+			return new Polynomial(this.variable,coefficients,this.modulo);
 		},
 
 		eq: function(p2) {
@@ -318,7 +311,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	var pattern_term = jme.compile(s_pattern_term);
 	var pattern_negative_term = jme.compile('-?');
 
-	Polynomial.from_tree = function(tree) {
+	Polynomial.from_tree = function(tree,modulo) {
 		var m = matchTree(pattern_polynomial_terms,tree,true);
 		if(!m) {
 			throw(new Error('Not a polynomial'));
@@ -362,10 +355,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			}
 		});
 
-		return new Polynomial(poly_variable,coefficients);
+		return new Polynomial(poly_variable,coefficients,modulo);
 	}
-	Polynomial.from_string = function(s) {
-		return Polynomial.from_tree(jme.compile(s));
+	Polynomial.from_string = function(s,modulo) {
+		return Polynomial.from_tree(jme.compile(s),modulo);
 	}
 
 	var poly = Polynomial.from_string;
@@ -414,17 +407,48 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}));
 	jme.lazyOps.push('polynomial');
 
+	jme.findvarsOps.mod_polynomial = function(tree,boundvars,scope) {
+		if(tree.args.length==2) {	// form created from JME tree
+			return jme.findvars(tree.args[1],boundvars,scope);
+		} else {	// form created from variable and list of coefficients
+			var vars = jme.findvars(tree.args[1],boundvars,scope);
+			vars = vars.merge(jme.findvars(tree.args[2],boundvars,scope));
+			return vars;
+		}
+	}
+
+	// either `polynomial(expression in one variable)`
+	// or `polynomial(variable_name,[coefficients])`
+	scope.addFunction(new funcObj('mod_polynomial',['?'],TPoly,null,{
+		evaluate: function(args,scope) {
+			if(args.length==2) {
+				var modulo = scope.evaluate(args[1]).value
+				return new TPoly(Polynomial.from_tree(args[0],modulo));
+			} else {
+				var variable_name = args[0].tok.name;
+				var l = scope.evaluate(args[1]).value;
+				var coefficients = {};
+				l.map(function(n,d) {
+					coefficients[d]=n.value;
+				});
+				var modulo = scope.evaluate(args[2]).value
+				return new TPoly(new Polynomial(variable_name,coefficients,modulo));
+			}
+		}
+	}));
+	jme.lazyOps.push('mod_polynomial');
+
 	scope.addFunction(new funcObj('+',[TPoly,TPoly],TPoly,function(a,b) {
 		return a.add(b);
 	}));
 
 	scope.addFunction(new funcObj('+',[TPoly,TNum],TPoly,function(a,b) {
-		b = new Polynomial(a.variable,{0:b});
+		b = new Polynomial(a.variable,{0:b},a.modulo);
 		return a.add(b);
 	}));
 
 	scope.addFunction(new funcObj('+',[TNum,TPoly],TPoly,function(a,b) {
-		a = new Polynomial(b.variable,{0:a});
+		a = new Polynomial(b.variable,{0:a},b.modulo);
 		return a.add(b);
 	}));
 
@@ -433,12 +457,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}));
 
 	scope.addFunction(new funcObj('-',[TPoly,TNum],TPoly,function(a,b) {
-		b = new Polynomial(a.variable,{0:b});
+		b = new Polynomial(a.variable,{0:b},a.modulo);
 		return a.sub(b);
 	}));
 
 	scope.addFunction(new funcObj('-',[TNum,TPoly],TPoly,function(a,b) {
-		a = new Polynomial(b.variable,{0:a});
+		a = new Polynomial(b.variable,{0:a},b.modulo);
 		return a.sub(b);
 	}));
 
@@ -456,10 +480,6 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	scope.addFunction(new funcObj('^',[TPoly,TNum],TPoly,function(a,b) {
 		return a.pow(b);
-	}));
-
-	scope.addFunction(new funcObj('pow_mod',[TPoly,TNum,TNum],TPoly,function(a,b,mod) {
-		return a.pow(b,mod);
 	}));
 
 	scope.addFunction(new funcObj('quotient',[TPoly,TPoly],TPoly,function(a,b) {
@@ -497,7 +517,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}
 
 	Numbas.jme.display.typeToJME.polynomial = function(thing,tok,bits,settings) {
-		return 'polynomial('+tok.value.toString()+')';
+		var p = tok.value;
+		if(p.modulo===Infinity) {
+			return 'polynomial('+p.toString()+')';
+		} else {
+			return 'mod_polynomial('+p.toString()+','+p.modulo+')';
+		}
 	}
 
 	/*

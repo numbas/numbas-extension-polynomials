@@ -17,6 +17,10 @@ Create a polynomial, automatically detecting the variable name from the expressi
 
 Create a polynomial in the given variable, with the given coefficients (`coefficients[i]` is the coefficient of `variable_name^i`). Example: `polynomial(x,[-1,0,1])` represents the polynomial `x^2-1`.
 
+### `mod_polynomial(expression,m)` or `mod_polynomial(variable_name,coefficients,m)`
+
+As above, but all operations on this polynomial will be calculated modulo `m`. 
+
 ### `p1+p2`
 
 Add two polynomials
@@ -44,10 +48,6 @@ Multiply a polynomial by a constant - more convenient than `p*polynomial(n)`.
 ### `p^n`
 
 Take polynomial `p` to the `n`th (integer, non-negative) power.
-
-### `mod_pow(p,n,m)`
-
-Take polynomial `p` to the `n`th power, with coefficients modulo `m`.
 
 ### `quotient(p1,p2)`
 
@@ -77,15 +77,15 @@ JavaScript functions
 
 (set it to a more convenient name, e.g. `var poly = Numbas.extensions.polynomials.Polynomial`)
 
-### `new Polynomial(variable_name,coefficients)`
+### `new Polynomial(variable_name,coefficients,[modulo])`
 
-`coefficients` is a dictionary of `degree → coefficient`.
+`coefficients` is a dictionary of `degree → coefficient`. If `modulo` is given, all coefficients will be reduced modulo that number in any calculations using this polynomial.
 
-### `Polynomial.from_tree(tree)`
+### `Polynomial.from_tree(tree,[modulo])`
 
 Create a polynomial object from a compiled JME tree
 
-### `Polynomial.from_string(expr)`
+### `Polynomial.from_string(expr,[modulo])`
 
 Create a polynomial object from a JME string
 
@@ -127,10 +127,6 @@ Mutliply `p1` by `p2`
 
 `n`th power of `p`
 
-### `p.pow(n,mod)`
-
-`n`th power of `p`, taking coefficients mod `mod`.
-
 ### `p.scale(n)`
 
 Multiply `p` by constant `n`
@@ -142,7 +138,6 @@ Add `n` to the degree of each term of `p`
 ### `p1.div(p2)`
 
 Divide `p1` by `p2`. Returns an object `{quotient: <polynomial>, remainder: <polynomial>}`
-
 
 ### `p.mod(n)`
 
