@@ -12,7 +12,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		for(var d in this.coefficients) {
 			if(!isNaN(d)) {
 				var c = this.coefficients[d];
-				if(c!=0) {
+				if(!isNaN(c) && c!=0) {
 					bits.push({degree:parseFloat(d),coefficient:c});
 				}
 			}
