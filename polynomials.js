@@ -88,6 +88,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			return out;
 		},
 
+		coefficient: function(d) {
+			return this.coefficients[d] || 0;
+		},
+
 		evaluate: function(x) {
 			var mul = Numbas.math.mul;
 			var add = Numbas.math.add;
@@ -502,6 +506,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	scope.addFunction(new funcObj('=',[TPoly,TPoly],TPoly,function(a,b) {
 		return a.eq(b);
+	}));
+
+	scope.addFunction(new funcObj('listval',[TPoly,TNum],TNum,function(p,i) {
+		return p.coefficient(i);
 	}));
 
 	Numbas.util.equalityTests['polynomial'] = function(a,b) {

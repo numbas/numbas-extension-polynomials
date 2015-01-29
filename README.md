@@ -69,6 +69,10 @@ Degree of `p` - highest power of the variable with a non-zero coefficient.
 
 Are `p1` and `p2` equal? True if all the coefficients match.
 
+### `p[d]`
+
+Coefficient of `x^d` in `p`.
+
 
 JavaScript functions
 --------------------
@@ -146,3 +150,7 @@ Take each coefficient of `p` mod `n` (returns a new polynomial object)
 ### `p1.eq(p2)`
 
 Are `p1` and `p2` equal?
+
+### `p.coefficient(d)`
+
+Coefficient of `x^d` in `p`.
