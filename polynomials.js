@@ -512,6 +512,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return p.coefficient(i);
 	}));
 
+	scope.addFunction(new funcObj('eval',[TPoly,TNum],TNum,function(p,x) {
+		return p.evaluate(x);
+	}));
+
 	Numbas.util.equalityTests['polynomial'] = function(a,b) {
 		return a.value.eq(b.value);
 	}
