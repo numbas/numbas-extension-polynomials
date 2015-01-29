@@ -226,7 +226,11 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 							c = c1*c2;
 						}
 						if(d in n_coefficients) {
-							n_coefficients[d] += c;
+							if(mod!==undefined) {
+								n_coefficients[d] = (n_coefficients[d]+c)%mod;
+							} else {
+								n_coefficients[d] += c;
+							}
 							if(n_coefficients[d]==0) {
 								delete n_coefficients[d];
 							}
