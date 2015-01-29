@@ -191,7 +191,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			return new Polynomial(p1.variable,coefficients);
 		},
 
-		pow: function(n) {
+		pow: function(n,mod) {
 			if(!Numbas.util.isInt(n)) {
 				throw(new Error("Sorry, can't take a non-integer power of a polynomial"));
 			}
@@ -219,7 +219,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 						d2 = parseFloat(d2);
 						var c2 = coefficients[d2];
 						var d = d1+d2;
-						var c = c1*c2;
+						var c;
+						if(mod!==undefined) {
+							c = (c1*c2)%mod;
+						} else {
+							c = c1*c2;
+						}
 						if(d in n_coefficients) {
 							n_coefficients[d] += c;
 							if(n_coefficients[d]==0) {
@@ -447,6 +452,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	scope.addFunction(new funcObj('^',[TPoly,TNum],TPoly,function(a,b) {
 		return a.pow(b);
+	}));
+
+	scope.addFunction(new funcObj('pow_mod',[TPoly,TNum,TNum],TPoly,function(a,b,mod) {
+		return a.pow(b,mod);
 	}));
 
 	scope.addFunction(new funcObj('quotient',[TPoly,TPoly],TPoly,function(a,b) {

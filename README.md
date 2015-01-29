@@ -45,6 +45,10 @@ Multiply a polynomial by a constant - more convenient than `p*polynomial(n)`.
 
 Take polynomial `p` to the `n`th (integer, non-negative) power.
 
+### `mod_pow(p,n,m)`
+
+Take polynomial `p` to the `n`th power, with coefficients modulo `m`.
+
 ### `quotient(p1,p2)`
 
 Divide `p1` by `p2`, and throw away the remainder (polynomial quotient of `p1` and `p2`)
@@ -122,6 +126,10 @@ Mutliply `p1` by `p2`
 ### `p.pow(n)`
 
 `n`th power of `p`
+
+### `p.pow(n,mod)`
+
+`n`th power of `p`, taking coefficients mod `mod`.
 
 ### `p.scale(n)`
 
