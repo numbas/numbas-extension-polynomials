@@ -3,8 +3,10 @@ Polynomials extension for Numbas
 
 This extension provides a new data type and some functions to deal with polynomials
 
-Examples
---------
+JME data type
+-------------
+
+This extension adds a new JME data type `Numbas.jme.types.polynomial`, representing a polynomial in a given variable.
 
 JME functions
 -------------
@@ -73,6 +75,17 @@ Are `p1` and `p2` equal? True if all the coefficients match.
 
 Coefficient of `x^d` in `p`.
 
+### `eval(p,x)`
+
+Evaluate the polynomial at the given point.
+
+### `expr(p)`
+
+A JME expression equivalent to the given polynomial; you can substitute this into the correct answer for a "Mathematical expression" part, for example.
+
+### `long_division(p1,p2)`
+
+LaTeX rendering of the long division of `p1` by `p2`.
 
 JavaScript functions
 --------------------

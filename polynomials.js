@@ -109,10 +109,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		},
 
 		degree: function() {
-			var max=null;
+			var max=0;
 			for(var d in this.coefficients) {
 				d=parseInt(d);
-				if(max===null || d>max) {
+				if(this.coefficients[d]!=0 && (max===null || d>max)) {
 					max = d;
 				}
 			}
@@ -367,6 +367,102 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	var poly = Polynomial.from_string;
 
+	extension.long_division = function(p1,p2) {
+		var q = p1.div(p2).quotient;
+		var dq = q.degree();
+
+		var tex = '\\begin{array}{l}\n';
+
+		tex += '\\underline{\\begin{alignat}{2}\n';
+		tex += line(p1).map(function(b){return '\\phantom{'+b+'}'}).join(' & ')+' \\\\\n';
+		for(var i=q.degree();i<p1.degree();i++) {
+			tex += '&&&';
+		}
+		tex += line(q).join(' & ')+' \n';
+		tex += '\\end{alignat}} \\\\\n';
+
+		var tphantom = '';
+		var bphantom = '';
+
+		function line(p) {
+			var bits = [];
+			for(var j=p.degree();j>=0;j--) {
+				var rc = p.coefficient(j);
+				var c = Math.abs(rc);
+				if(j<p.degree()) {
+					bits.push(rc==0 ? '' : rc>=0 ? '+' : '-');
+				}
+				if(c==0) {
+					bits.push('');
+					bits.push('\\quad');
+				} else if(j==0) {
+					bits.push(c);
+				} else {
+					bits.push((rc<0 && j==p.degree() ? '-' : '') + (c==1 ? '' : c));
+					bits.push(p.variable+(j>1 ? '^{'+j+'}'  : ''));
+				}
+			}
+			for(var i=bits.length-1;i>=2 && bits[i]=='\\quad';i-=3) {
+				bits=bits.slice(0,i-2);
+			}
+			return bits;
+		}
+			
+		for(var i=0;i<=dq;i++) {
+			var coefficients = {};
+			for(var j=0;j<=dq;j++) {
+				coefficients[j] = j>dq-i ? q.coefficients[j] : 0;
+			}
+			var t = p1.sub(p2.mul(new Polynomial(p1.variable,coefficients,p1.modulo)));
+
+			var b;
+
+			if(i<dq) {
+				coefficients = {};
+				coefficients[dq-i] = q.coefficients[dq-i];
+				for(var j=0;j<dq-i;j++) {
+					coefficients[j] = 0;
+				}
+			} else {
+				coefficients = {0:q.coefficients[0]}
+			}
+			b = p2.mul(new Polynomial(p1.variable, coefficients,p1.modulo));
+
+			coefficients = {};
+			for(var j=0;j<t.degree();j++) {
+				coefficients[i] = 0;
+			}
+			coefficients[t.degree()] = t.coefficients[t.degree()];
+			var p = new Polynomial(p1.variable,coefficients,p1.modulo);
+
+			var tbits = line(t);
+			var bbits = line(b);
+
+			tex += '\\underline{\\begin{alignat}{2}\n';
+			tex += tphantom+' '+tbits.join(' & ')+' \\\\\n';
+			tex += bphantom+' '+bbits.join(' & ')+' \\\\\n';
+			tex += '\\end{alignat}} \\\\\n';
+
+			tphantom += tbits.slice(0,3).map(function(b){return '\\phantom{'+b+'}'}).join(' & ');
+			if(i==0) {
+				tphantom+=' & ';
+			}
+			bphantom += bbits.slice(0,3).map(function(b){return '\\phantom{'+b+'}'}).join(' & ');
+			if(i==0) {
+				bphantom+=' & ';
+			}
+		}
+		var coefficients = {};
+		for(var j=0;j<=dq;j++) {
+			coefficients[j] = j>dq-i ? q.coefficients[j] : 0;
+		}
+		var t = p1.sub(p2.mul(new Polynomial(p1.variable,coefficients,p1.modulo)));
+
+		tex += '\\begin{alignat}{2}\n'+tphantom+line(t).join(' & ')+'\\end{alignat}\n';
+
+		tex += '\\end{array}';
+		return tex;
+	}
 
 
 	//// JME functions
@@ -376,6 +472,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	var TString = Numbas.jme.types.TString;
 	var TList = Numbas.jme.types.TList;
 	var TName = Numbas.jme.types.TName;
+	var TExpression = Numbas.jme.types.TExpression;
 
 	var scope = extension.scope;
 
@@ -516,6 +613,17 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return p.evaluate(x);
 	}));
 
+	scope.addFunction(new funcObj('expr',[TPoly],TExpression, function(p) {
+		return new TExpression(Numbas.jme.compile(p+''));
+	},{unwrapValues: true}));
+
+	scope.addFunction(new funcObj('long_division',[TPoly,TPoly],TString, function(p1,p2) {
+		var tex = extension.long_division(p1,p2);
+		var s = new TString(tex);
+		s.latex = true;
+		return s;
+	},{unwrapValues: true}));
+
 	Numbas.util.equalityTests['polynomial'] = function(a,b) {
 		return a.value.eq(b.value);
 	}
@@ -537,25 +645,5 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		}
 	}
 
-	/*
-	window.poly = poly;
-	var p1 = poly('-2x^3+x^2-x+2-1');
-	var p2 = poly('x^2-3');
-	console.log(p1+' + '+p2+' = '+p1.add(p2))
-	console.log(poly('x_1^2').toLaTeX());
-	console.log('f(x) = '+p2+' ; f(3) = '+p2.evaluate(3));
-	console.log('f(x) = '+p2+' ; f(1-3i) = '+p2.evaluate({re:1,im:-3,complex:true}));
-	console.log('('+p1+')*('+p2+') = '+p1.mul(p2));
-	console.log(p1);
-	console.log(poly('0').toLaTeX()+poly('x-x'));
-	console.log(poly('x^2+x+1').pow(3)+'');
-
-	window.show_division = function(a,b) {
-		var p1 = poly(a);
-		var p2 = poly(b);
-		var o = p1.div(p2);
-		console.log(p1+' = ('+o.quotient+')*('+p2+') + '+o.remainder);
-	}
-	*/
 })
 
