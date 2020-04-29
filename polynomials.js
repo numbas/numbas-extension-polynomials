@@ -2,7 +2,6 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	var jme = Numbas.jme;
     var funcObj = jme.funcObj;
     var TNum = jme.types.TNum;
-	var matchTree = jme.display.matchTree;
 	var mod = Numbas.math.mod;
 
 	var Polynomial = extension.Polynomial = function(variable,coefficients,modulo) {
@@ -308,19 +307,19 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		}
 	}
 
-	var s_pattern_term = 'm_any(m_nothing,m_type(name);variable,(-m_type(name);variable);negative,m_type(name);variable^m_pm(m_number);degree,(-m_type(name);variable^m_pm(m_number);degree);negative)*m_any(m_nothing,m_pm(m_number));coefficient';
-	var s_pattern_polynomial_terms = 'm_all(m_pm('+s_pattern_term+'));terms+m_nothing';
+  	var s_pattern_term = '`+-$v;variable^(`+-$n);degree`? * $n;coefficient`?'; 
+  	var s_pattern_polynomial_terms = '["term": '+s_pattern_term+'] `@ term`*;terms + $z';
 
-	var pattern_polynomial_terms = jme.compile(s_pattern_polynomial_terms);
-	var pattern_term = jme.compile(s_pattern_term);
-	var pattern_negative_term = jme.compile('-?');
+	var pattern_polynomial_terms = new jme.rules.Rule(s_pattern_polynomial_terms,null,'acgl','polynomial');
+	var pattern_term = new jme.rules.Rule(s_pattern_term,null,'acg','polynomial term');
+	var pattern_negative_term = new jme.rules.Rule('-?',null,'','negative');
 
 	Polynomial.from_tree = function(tree,modulo) {
-		var m = matchTree(pattern_polynomial_terms,tree,true);
+		var m = pattern_polynomial_terms.match(tree);
 		if(!m) {
 			throw(new Error('Not a polynomial'));
 		}
-		var terms = jme.display.getCommutingTerms(m.terms,'+').terms;
+		var terms = jme.isType(m.terms.tok,'list') ? m.terms.args.map(function(a) { return a.tok.tree; }) : [m.terms];
 
 		function get(tree,otherwise) {
 			return tree ? jme.builtinScope.evaluate(tree).value : otherwise;
@@ -330,22 +329,19 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		var poly_variable;
 		terms.map(function(term) {
 			var negate = 1;
-			if(matchTree(pattern_negative_term,term)) {
+			if(pattern_negative_term.match(term)) {
 				negate = -1;
 				term = term.args[0];
 			}
-			var m = matchTree(pattern_term,term,true);
+			var m = pattern_term.match(term);
 			var coefficient = negate*get(m.coefficient,1);
-			if(m.negative) {
-				coefficient = -coefficient;
-			}
 			var variable = m.variable ? m.variable.tok.name : null;
 			var degree = variable ? get(m.degree,1) : 0;
 			
 			if(variable) {
 				if(!poly_variable) {
 					poly_variable = variable;
-				} else if(poly_variable && variable != poly_variable) {
+				} else if(variable != poly_variable) {
 					throw(new Error('More than one variable name in polynomial constructor'));
 				}
 			}
@@ -646,4 +642,3 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}
 
 })
-
