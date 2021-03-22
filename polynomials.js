@@ -307,12 +307,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		}
 	}
 
-  	var s_pattern_term = '(`+-$v;variable^(`+-$n);degree`? * $n;coefficient`?) `| `+-$n;coefficient;degree:0'; 
+  	var s_pattern_term = '(`+-($v;variable^(`+-$n);degree`? * $n;coefficient`?)) `| `+-$n;coefficient;degree:0'; 
   	var s_pattern_polynomial_terms = '["term": '+s_pattern_term+'] `@ term`*;terms + $z';
 
 	var pattern_polynomial_terms = new jme.rules.Rule(s_pattern_polynomial_terms,null,'acgl','polynomial');
 	var pattern_term = new jme.rules.Rule(s_pattern_term,null,'acg','polynomial term');
-	var pattern_negative_term = new jme.rules.Rule('-?',null,'','negative');
+	var pattern_negative_term = new jme.rules.Rule('-? `| (-?)*?',null,'','negative');
 
 	Polynomial.from_tree = function(tree,modulo) {
 		var m = pattern_polynomial_terms.match(tree);
@@ -330,6 +330,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		terms.map(function(term) {
 			var negate = 1;
 			if(pattern_negative_term.match(term)) {
+                term = jme.rules.extractLeadingMinus(term);
 				negate = -1;
 				term = term.args[0];
 			}
