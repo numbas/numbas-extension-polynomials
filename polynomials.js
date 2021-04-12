@@ -492,14 +492,29 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	scope.addFunction(new funcObj('polynomial',['?'],TPoly,null,{
 		evaluate: function(args,scope) {
 			if(args.length==1) {
-                if(jme.isType(args[0].tok,'string')) {
-                    var str = jme.castToType(args[0].tok,'string').value;
-                    return new TPoly(Polynomial.from_string(str));
-                } else if(jme.isType(args[0].tok,'expression')) {
-                    var tree = jme.castToType(args[0].tok,'expression').tree;
-                    return new TPoly(Polynomial.from_tree(tree));
-                } else {
-        			return new TPoly(Polynomial.from_tree(args[0]));
+                function from_token(tok) {
+                    if(jme.isType(tok,'string')) {
+                        var str = jme.castToType(tok,'string').value;
+                        return new TPoly(Polynomial.from_string(str));
+                    } else if(jme.isType(tok,'expression')) {
+                        var tree = jme.castToType(tok,'expression').tree;
+                        return new TPoly(Polynomial.from_tree(tree));
+                    }
+                }
+                try {
+                    return new TPoly(Polynomial.from_tree(args[0]));
+                } catch(e) {
+                    try {
+                        var v = scope.evaluate(args[0]);
+                        var p = from_token(v);
+                        if(p) {
+                            return p;
+                        } else {
+                            throw(e);
+                        }
+                    } catch(e2) {
+                        throw(e);
+                    }
                 }
 			} else {
 				var variable_name = args[0].tok.name;
