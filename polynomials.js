@@ -13,7 +13,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		for(var d in this.coefficients) {
 			if(!isNaN(d)) {
 				var c = mod(this.coefficients[d], this.modulo);
-				if(!isNaN(c) && c!=0) {
+				if(!isNaN(c) && !Numbas.math.isclose(c,0)) {
 					bits.push({degree:parseFloat(d),coefficient:c});
 				}
 			}
@@ -311,13 +311,13 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
   	var s_pattern_term = '(`+-($v;variable^(`+-$n);degree`? * $n;coefficient`?)) `| `+-$n;coefficient;degree:0'; 
   	var s_pattern_polynomial_terms = '["term": '+s_pattern_term+'] `@ term`*;terms + $z';
 
-	var pattern_polynomial_terms = new jme.rules.Rule(s_pattern_polynomial_terms,null,'acgl','polynomial');
-	var pattern_term = new jme.rules.Rule(s_pattern_term,null,'acg','polynomial term');
+	var pattern_polynomial_terms = new jme.rules.Rule(s_pattern_polynomial_terms,null,'acl','polynomial');
+	var pattern_term = new jme.rules.Rule(s_pattern_term,null,'ac','polynomial term');
 	var pattern_negative_term = new jme.rules.Rule('-? `| (-?)*?',null,'','negative');
 
 	Polynomial.from_tree = function(tree,modulo) {
 		var m = pattern_polynomial_terms.match(tree);
-		if(!m) {
+		if(!m || !m.terms) {
 			throw(new Error('Not a polynomial'));
 		}
 		var terms = jme.isType(m.terms.tok,'list') ? m.terms.args.map(function(a) { return a.tok.tree; }) : [m.terms];
@@ -344,7 +344,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 				if(!poly_variable) {
 					poly_variable = variable;
 				} else if(variable != poly_variable) {
-					throw(new Error('More than one variable name in polynomial constructor'));
+					throw(new Error('Polynomial contains more than one variable name.'));
 				}
 			}
 			if(degree in coefficients) {
@@ -492,7 +492,15 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	scope.addFunction(new funcObj('polynomial',['?'],TPoly,null,{
 		evaluate: function(args,scope) {
 			if(args.length==1) {
-				return new TPoly(Polynomial.from_tree(args[0]));
+                if(jme.isType(args[0].tok,'string')) {
+                    var str = jme.castToType(args[0].tok,'string').value;
+                    return new TPoly(Polynomial.from_string(str));
+                } else if(jme.isType(args[0].tok,'expression')) {
+                    var tree = jme.castToType(args[0].tok,'expression').tree;
+                    return new TPoly(Polynomial.from_tree(tree));
+                } else {
+        			return new TPoly(Polynomial.from_tree(args[0]));
+                }
 			} else {
 				var variable_name = args[0].tok.name;
 				var l = scope.evaluate(args[1]).value;
@@ -565,6 +573,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return a.sub(b);
 	}));
 
+	scope.addFunction(new funcObj('-u',[TPoly],TPoly,function(a) {
+		return a.negate();
+	}));
+
 	scope.addFunction(new funcObj('*',[TPoly,TPoly],TPoly,function(a,b) {
 		return a.mul(b);
 	}));
@@ -577,7 +589,11 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return b.scale(a);
 	}));
 
-	scope.addFunction(new funcObj('^',[TPoly,TNum],TPoly,function(a,b) {
+	scope.addFunction(new funcObj('/',[TPoly,TNum],TPoly,function(a,b) {
+		return a.scale(1/b);
+	}));
+
+    scope.addFunction(new funcObj('^',[TPoly,TNum],TPoly,function(a,b) {
 		return a.pow(b);
 	}));
 

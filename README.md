@@ -13,7 +13,16 @@ JME functions
 
 ### `polynomial(expression in one variable)`
 
-Create a polynomial, automatically detecting the variable name from the expression. Example: `polynomial(x^3+x-2)`. This is quite strict about what it accepts - only one variable name, and coefficients and degrees have to be literal numbers, not calculations or references to other variables.
+Create a polynomial, automatically detecting the variable name from the expression. 
+This is quite strict about what it accepts - only one variable name, and coefficients and degrees have to be literal numbers, not calculations or references to other variables.
+
+You can either write a literal expression, or pass a string.
+Note that if you use a literal expression, variables defined in the scope are substituted in. It's safer to use a string.
+
+#### Examples
+
+* `polynomial(x^2-2x+3)`
+* `polynomial("5*x^4 + 2*x")`
 
 ### `polynomial(variable_name,coefficients)`
 
