@@ -295,12 +295,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 		eq: function(p2) {
 			for(var d in this.coefficients) {
-				if(p2.coefficients[d]!=this.coefficients[d]) {
+				if(p2.coefficient(d) != this.coefficient(d)) {
 					return false;
 				}
 			}
 			for(var d in p2.coefficients) {
-				if(p2.coefficients[d]!=this.coefficients[d]) {
+				if(p2.coefficient(d) != this.coefficient(d)) {
 					return false;
 				}
 			}
