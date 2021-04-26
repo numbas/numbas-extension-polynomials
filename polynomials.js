@@ -55,7 +55,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		},
 
 		toLaTeX: function() {
-			var variable = this.variable;
+			var variable = this.variable || '';
             var variable_tok = new Numbas.jme.types.TName(variable);
 
 			if(!this.ordered_coefficients.length) {
