@@ -92,6 +92,14 @@ Evaluate the polynomial at the given point.
 
 A JME expression equivalent to the given polynomial; you can substitute this into the correct answer for a "Mathematical expression" part, for example.
 
+### `string(p)`
+
+A string representation of the polynomial.
+
+### `latex(p)`
+
+A LaTeX representation of the polynomial.
+
 ### `long_division(p1,p2)`
 
 LaTeX rendering of the long division of `p1` by `p2`.

@@ -560,6 +560,18 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	}));
 	jme.lazyOps.push('mod_polynomial');
 
+    scope.addFunction(new funcObj('string',[TPoly],TString, function(p) {
+        return p.toString();
+    }));
+
+    scope.addFunction(new funcObj('latex',[TPoly],TString, function(p) {
+		var tex = p.toLaTeX();
+		var s = new TString(tex);
+		s.latex = true;
+        s.safe = true;
+		return s;
+    }));
+
 	scope.addFunction(new funcObj('+',[TPoly,TPoly],TPoly,function(a,b) {
 		return a.add(b);
 	}));
