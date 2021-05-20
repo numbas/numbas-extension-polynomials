@@ -426,10 +426,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
 	var scope = extension.scope;
 
-	var TPoly = Numbas.jme.types.polynomial = Numbas.jme.types.TPoly = function(p) {
+	var TPoly = function(p) {
 		this.value = p;
 	};
-	TPoly.prototype.type = 'polynomial';
+    Numbas.jme.registerType(TPoly,'polynomial');
 
 	jme.findvarsOps.polynomial = function(tree,boundvars,scope) {
 		if(tree.args.length==1) {	// form created from JME tree
@@ -621,21 +621,21 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		return a.value.eq(b.value);
 	}
 
-	Numbas.jme.display.typeToTeX.polynomial = function(thing,tok,texArgs,settings) {
-		return tok.value.toLaTeX();
-	}
+    Numbas.jme.display.registerType(TPoly, {
+        tex: function(tree,tok,texArgs) {
+    		return tok.value.toLaTeX();
+	    },
+        jme: function(tree,tok,bits) {
+            var p = tok.value;
+            if(p.modulo===Infinity) {
+                return 'polynomial('+p.toString()+')';
+            } else {
+                return 'mod_polynomial('+p.toString()+','+p.modulo+')';
+            }
+        }
+    });
 
-	Numbas.jme.display.texOps.polynomial = function(thing,texArgs,settings) {
+	Numbas.jme.display.texOps.polynomial = function(tree,texArgs) {
 		return texArgs[0];
 	}
-
-	Numbas.jme.display.typeToJME.polynomial = function(thing,tok,bits,settings) {
-		var p = tok.value;
-		if(p.modulo===Infinity) {
-			return 'polynomial('+p.toString()+')';
-		} else {
-			return 'mod_polynomial('+p.toString()+','+p.modulo+')';
-		}
-	}
-
 })
