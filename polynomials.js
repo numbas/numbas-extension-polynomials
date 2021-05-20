@@ -366,99 +366,51 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	var poly = Polynomial.from_string;
 
 	extension.long_division = function(p1,p2) {
+
 		var q = p1.div(p2).quotient;
-		var dq = q.degree();
 
-		var tex = '\\begin{array}{l}\n';
+        var columns = 2*(Math.max(p1.degree(),p2.degree())+1);
 
-		tex += '\\underline{\\begin{alignat}{2}\n';
-		tex += line(p1).map(function(b){return '\\phantom{'+b+'}'}).join(' & ')+' \\\\\n';
-		for(var i=q.degree();i<p1.degree();i++) {
-			tex += '&&&';
-		}
-		tex += line(q).join(' & ')+' \n';
-		tex += '\\end{alignat}} \\\\\n';
+		var tex = '\\begin{alignat}{'+(columns+1)+'}\n';
 
-		var tphantom = '';
-		var bphantom = '';
+        var hline = '\\hline \n';
 
-		function line(p) {
+		tex += line(q) + hline;
+
+		function line(p,comment) {
 			var bits = [];
-			for(var j=p.degree();j>=0;j--) {
-				var rc = p.coefficient(j);
-				var c = Math.abs(rc);
-				if(j<p.degree()) {
-					bits.push(rc==0 ? '' : rc>=0 ? '+' : '-');
-				}
-				if(c==0) {
-					bits.push('');
-					bits.push('\\quad');
-				} else if(j==0) {
-					bits.push(c);
-				} else {
-					bits.push((rc<0 && j==p.degree() ? '-' : '') + (c==1 ? '' : c));
-					bits.push(p.variable+(j>1 ? '^{'+j+'}'  : ''));
-				}
-			}
-			for(var i=bits.length-1;i>=2 && bits[i]=='\\quad';i-=3) {
-				bits=bits.slice(0,i-2);
-			}
-			return bits;
+            for(var j=0;j<=columns/2;j++) {
+                var c = p.coefficient(j);
+                if(c==0) {
+                    bits.splice(0,0,p.degree()==0 &&j==0 ? '0' : '');
+                    bits.splice(0,0,'');
+                } else {
+                    var col = (j>0 && Math.abs(c)==1) ? '' : Math.abs(c)+'';
+                    if(j==1) {
+                        col += ' '+p.variable;
+                    } else if(j>1) {
+                        col += ' '+p.variable+'^{'+j+'}';
+                    }
+                    bits.splice(0,0,col);
+                    if(j<p.degree() || c<0) {
+                        bits.splice(0,0,'\\phantom. '+(c<0 ? '-' : '+')+' \\phantom.');
+                    } else {
+                        bits.splice(0,0,'');
+                    }
+                }
+            }
+            bits.push(comment ? '\\quad '+comment : '');
+            return bits.join(' & ')+' \\\\ \n';
 		}
-			
-		for(var i=0;i<=dq;i++) {
-			var coefficients = {};
-			for(var j=0;j<=dq;j++) {
-				coefficients[j] = j>dq-i ? q.coefficients[j] : 0;
-			}
-			var t = p1.sub(p2.mul(new Polynomial(p1.variable,coefficients,p1.modulo)));
-
-			var b;
-
-			if(i<dq) {
-				coefficients = {};
-				coefficients[dq-i] = q.coefficients[dq-i];
-				for(var j=0;j<dq-i;j++) {
-					coefficients[j] = 0;
-				}
-			} else {
-				coefficients = {0:q.coefficients[0]}
-			}
-			b = p2.mul(new Polynomial(p1.variable, coefficients,p1.modulo));
-
-			coefficients = {};
-			for(var j=0;j<t.degree();j++) {
-				coefficients[i] = 0;
-			}
-			coefficients[t.degree()] = t.coefficients[t.degree()];
-			var p = new Polynomial(p1.variable,coefficients,p1.modulo);
-
-			var tbits = line(t);
-			var bbits = line(b);
-
-			tex += '\\underline{\\begin{alignat}{2}\n';
-			tex += tphantom+' '+tbits.join(' & ')+' \\\\\n';
-			tex += bphantom+' '+bbits.join(' & ')+' \\\\\n';
-			tex += '\\end{alignat}} \\\\\n';
-
-			tphantom += tbits.slice(0,3).map(function(b){return '\\phantom{'+b+'}'}).join(' & ');
-			if(i==0) {
-				tphantom+=' & ';
-			}
-			bphantom += bbits.slice(0,3).map(function(b){return '\\phantom{'+b+'}'}).join(' & ');
-			if(i==0) {
-				bphantom+=' & ';
-			}
-		}
-		var coefficients = {};
-		for(var j=0;j<=dq;j++) {
-			coefficients[j] = j>dq-i ? q.coefficients[j] : 0;
-		}
-		var t = p1.sub(p2.mul(new Polynomial(p1.variable,coefficients,p1.modulo)));
-
-		tex += '\\begin{alignat}{2}\n'+tphantom+line(t).join(' & ')+'\\end{alignat}\n';
-
-		tex += '\\end{array}';
+		
+        while(p1.degree()>=p2.degree()) {
+            var d = p1.coefficients[p1.degree()]/p2.coefficients[p2.degree()];
+            var p3 = p2.scale(d).add_degree(p1.degree()-p2.degree());
+            tex += line(p1) + line(p3,'\\text{multiply by } '+d) + hline;
+            p1 = p1.sub(p3);
+        }
+        tex += line(p1,'\\text{remainder}');
+		tex += '\\end{alignat}';
 		return tex;
 	}
 
