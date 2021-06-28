@@ -316,7 +316,8 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 	var pattern_negative_term = new jme.rules.Rule('-? `| (-?)*?',null,'','negative');
 
 	Polynomial.from_tree = function(tree,modulo) {
-		var m = pattern_polynomial_terms.match(tree);
+        var scope = Numbas.jme.builtinScope;
+		var m = pattern_polynomial_terms.match(tree,scope);
 		if(!m || !m.terms) {
 			throw(new Error('Not a polynomial'));
 		}
@@ -330,12 +331,12 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 		var poly_variable;
 		terms.map(function(term) {
 			var negate = 1;
-			if(pattern_negative_term.match(term)) {
+			if(pattern_negative_term.match(term,scope)) {
                 term = jme.rules.extractLeadingMinus(term);
 				negate = -1;
 				term = term.args[0];
 			}
-			var m = pattern_term.match(term);
+			var m = pattern_term.match(term,scope);
 			var coefficient = negate*get(m.coefficient,1);
 			var variable = m.variable ? m.variable.tok.name : null;
 			var degree = variable ? get(m.degree,1) : 0;
