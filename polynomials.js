@@ -54,7 +54,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			return out;
 		},
 
-		toLaTeX: function() {
+		toLaTeX: function(texifier) {
 			var variable = this.variable || '';
             var variable_tok = new Numbas.jme.types.TName(variable);
 
@@ -63,6 +63,9 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 			}
 
 			var out = '';
+            if(!texifier) {
+                texifier = new Numbas.jme.display.Texifier();
+            }
 			this.ordered_coefficients.map(function(bit,i){
 				var d = Numbas.math.niceNumber(bit.degree);
 				var c = Numbas.math.niceNumber(Math.abs(bit.coefficient));
@@ -79,7 +82,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 					if(c!=1) {
 						out += c+' ';
 					}
-					out += jme.display.texName(variable_tok);
+					out += texifier.texName(variable_tok);
 					if(d!=1) {
 						out += '^{'+d+'}';
 					}
@@ -624,7 +627,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
 
     Numbas.jme.display.registerType(TPoly, {
         tex: function(tree,tok,texArgs) {
-    		return tok.value.toLaTeX();
+    		return tok.value.toLaTeX(this);
 	    },
         jme: function(tree,tok,bits) {
             var p = tok.value;
