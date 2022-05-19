@@ -474,9 +474,10 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
                 }
 			} else {
 				var variable_name = args[0].tok.name;
-				var l = scope.evaluate(args[1]).value;
+				var l = jme.castToType(scope.evaluate(args[1]),'list').value;
 				var coefficients = {};
 				l.map(function(n,d) {
+                    n = jme.castToType(n,'number');
 					coefficients[d]=n.value;
 				});
 				return new TPoly(new Polynomial(variable_name,coefficients));
