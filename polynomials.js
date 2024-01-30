@@ -67,8 +67,8 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
                 texifier = new Numbas.jme.display.Texifier();
             }
             this.ordered_coefficients.map(function(bit,i){
-                var d = Numbas.math.niceNumber(bit.degree);
-                var c = Numbas.math.niceNumber(Math.abs(bit.coefficient));
+                var d = texifier.number(bit.degree);
+                var c = texifier.number(Math.abs(bit.coefficient));
                 if(i>0) {
                     out += bit.coefficient>0 ? ' + ' : ' - ';
                 } else {
