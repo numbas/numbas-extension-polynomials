@@ -211,7 +211,7 @@ Numbas.addExtension('polynomials',['jme','jme-display'],function(extension) {
                 if(this.ordered_coefficients.length==0) {
                     throw(new Error("0^0 is undefined"));
                 } else {
-                    return new Polynomial(p1.variable,{0:1},this.modulo);
+                    return new Polynomial(this.variable,{0:1},this.modulo);
                 }
             }
 
